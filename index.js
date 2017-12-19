@@ -65,7 +65,7 @@ var socket;
 var HOSTNAME_IP_REGEX = /[^0-9a-zA-Z\-.]/g;
 
 function checkElevated() {
-    return new Promise(resolve => {
+    return new Promise(function(resolve) {
         if (os.platform() === 'win32') {
             resolve(isWinAdmin());
         } else if (process.getuid() <= 0) {
@@ -79,16 +79,16 @@ function checkElevated() {
 config.UA = pkg.name + '/' + pkg.version;
 
 checkElevated()
-    .then(isElevated => {
+    .then(function(isElevated) {
         if (!isElevated) {
             console.log('You must be an Administrator (root, sudo) run this agent! See -h or --help for more info.');
             process.exit();
         }
 
         return properties.parseAsync(program.config || config.DEFAULT_CONF_FILE, { path: true })
-            .catch(() => {});
+            .catch(function() {});
     })
-    .then(parsedConfig => {
+    .then(function(parsedConfig) {
         parsedConfig = parsedConfig || {};
 
         // allow key to be passed via env
@@ -164,7 +164,7 @@ checkElevated()
         }
 
         if (saveMessages.length) {
-            return fileUtils.saveConfig(parsedConfig, program.config || config.DEFAULT_CONF_FILE).then(() => {
+            return fileUtils.saveConfig(parsedConfig, program.config || config.DEFAULT_CONF_FILE).then(function() {
                 for (var i = 0; i < saveMessages.length; i++) {
                     console.log(saveMessages[i]);
                 }
@@ -190,13 +190,13 @@ checkElevated()
         }
 
         return distro()
-            .catch(() => {});
+            .catch(function() {});
     })
-    .then(dist => {
+    .then(function(dist) {
         if (dist && dist.os) {
             config.osdist = dist.os + (dist.release ? ' ' + dist.release : '');
         }
-        return new Promise(resolve => {
+        return new Promise(function(resolve) {
             request('http://169.254.169.254/latest/dynamic/instance-identity/document/', { timeout: 1000, json: true }, function(err, res, body) {
                 if (res && res.statusCode && body) {
                     config.awsid = body.instanceId;
@@ -206,12 +206,12 @@ checkElevated()
                     config.awstype = body.instanceType;
                 }
                 resolve(macaddress.allAsync()
-                    .catch(() => {})
+                    .catch(function() {})
                 );
             });
         });
     })
-    .then(all => {
+    .then(function(all) {
         if (all) {
             var ifaces = Object.keys(all);
             for (var i = 0; i < ifaces.length; i++) {
@@ -232,13 +232,13 @@ checkElevated()
 
         return apiClient.getAuthToken(config, pkg.name, socket);
     })
-    .then(() => {
+    .then(function() {
         debug('got auth token:');
         debug(config.auth_token);
         debug('connecting to log server');
         return connectionManager.connectLogServer(config, pkg.name);
     })
-    .then(sock => {
+    .then(function(sock) {
         socket = sock;
         debug('logdna agent successfully started');
     });
